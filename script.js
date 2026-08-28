@@ -1,151 +1,645 @@
-const cars = [
- {id:"supra",brand:"Toyota",name:"GR Supra",year:2024,engine:"3.0L Turbo I6",power:"382 hp",torque:"368 lb-ft",drive:"RWD",zero:"3.9 sec",top:"155 mph",weight:"3,400 lb",price:"$54,595",image:"assets/cars/supra.svg",desc:"A compact rear-wheel-drive sports car with a turbocharged straight-six and a reputation for sharp, playful handling."},
- {id:"gtr",brand:"Nissan",name:"GT-R",year:2024,engine:"3.8L Twin-Turbo V6",power:"565 hp",torque:"467 lb-ft",drive:"AWD",zero:"2.9 sec",top:"196 mph",weight:"3,935 lb",price:"$121,090",image:"assets/cars/gtr.svg",desc:"Nissan's legendary twin-turbo all-wheel-drive performance flagship, blending immense pace with everyday usability."},
- {id:"m3",brand:"BMW",name:"M3 Competition",year:2024,engine:"3.0L Twin-Turbo I6",power:"503 hp",torque:"479 lb-ft",drive:"RWD",zero:"3.8 sec",top:"155 mph",weight:"3,840 lb",price:"$80,800",image:"assets/cars/m3.svg",desc:"A high-performance sedan that pairs a straight-six engine with serious chassis tuning and unmistakable M character."},
- {id:"911",brand:"Porsche",name:"911 Carrera",year:2024,engine:"3.0L Twin-Turbo Flat-6",power:"379 hp",torque:"331 lb-ft",drive:"RWD",zero:"4.0 sec",top:"182 mph",weight:"3,354 lb",price:"$116,050",image:"assets/cars/911.svg",desc:"The modern evolution of Porsche's enduring sports-car formula: rear-engine balance, precision, and everyday refinement."},
- {id:"mustang",brand:"Ford",name:"Mustang GT",year:2024,engine:"5.0L V8",power:"480 hp",torque:"415 lb-ft",drive:"RWD",zero:"4.2 sec",top:"155 mph",weight:"3,588 lb",price:"$44,055",image:"assets/cars/mustang.svg",desc:"A modern American performance coupe powered by a naturally aspirated V8 and wrapped in unmistakable Mustang design."},
- {id:"m4",brand:"BMW",name:"M4 Competition",year:2024,engine:"3.0L Twin-Turbo I6",power:"503 hp",torque:"479 lb-ft",drive:"RWD",zero:"3.8 sec",top:"155 mph",weight:"3,880 lb",price:"$81,100",image:"assets/cars/m4.svg",desc:"The coupe sibling to the M3, combining broad-shouldered styling with the same focused turbocharged performance."}
-];
-
-let selectedBrand = "All";
-let compareIds = [];
-let favorites = JSON.parse(localStorage.getItem("torqvault-favorites") || "[]");
-let activeModalCar = null;
-
-const grid = document.getElementById("carGrid");
-const empty = document.getElementById("emptyState");
-const carSearch = document.getElementById("carSearch");
-const heroSearch = document.getElementById("heroSearch");
-const favCount = document.getElementById("favCount");
-
-function saveFavs(){localStorage.setItem("torqvault-favorites", JSON.stringify(favorites)); updateFavCount();}
-function updateFavCount(){favCount.textContent=favorites.length;}
-function isFav(id){return favorites.includes(id)}
-
-function renderCars(){
-  const q=(carSearch.value||heroSearch.value||"").trim().toLowerCase();
-  const visible=cars.filter(c=>{
-    const brandOk=selectedBrand==="All"||c.brand===selectedBrand;
-    const text=[c.name,c.brand,c.year,c.engine].join(" ").toLowerCase();
-    return brandOk && text.includes(q);
-  });
-  grid.innerHTML=visible.map(c=>`
-    <article class="car-card" data-id="${c.id}">
-      <div class="car-image"><img src="${c.image}" alt="${c.year} ${c.brand} ${c.name}"></div>
-      <div class="car-info">
-        <div class="car-meta"><span>${c.brand}</span><span>${c.year}</span></div>
-        <div class="car-name">${c.name}</div>
-        <div class="card-bottom">
-          <span class="car-spec">${c.power} · ${c.zero} 0–60</span>
-          <div>
-            <button class="compare-btn" data-compare="${c.id}">${compareIds.includes(c.id)?"✓ Added":"Compare"}</button>
-            <button class="heart ${isFav(c.id)?"saved":""}" data-fav="${c.id}" title="Save">♡</button>
-          </div>
-        </div>
-      </div>
-    </article>`).join("");
-  empty.style.display=visible.length?"none":"block";
-}
-renderCars(); updateFavCount();
-
-document.getElementById("filters").addEventListener("click",e=>{
-  const btn=e.target.closest(".filter"); if(!btn)return;
-  selectedBrand=btn.dataset.brand;
-  document.querySelectorAll(".filter").forEach(b=>b.classList.toggle("active",b===btn));
-  renderCars();
-});
-
-document.querySelectorAll("[data-brand-jump]").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    selectedBrand=btn.dataset.brand;
-    document.querySelectorAll(".filter").forEach(b=>b.classList.toggle("active",b.dataset.brand===selectedBrand));
-    document.getElementById("cars").scrollIntoView({behavior:"smooth"});
-    renderCars();
-  });
-});
-
-function syncSearch(source){
-  if(source===heroSearch) carSearch.value=heroSearch.value;
-  else heroSearch.value=carSearch.value;
-  renderCars();
-}
-heroSearch.addEventListener("input",()=>syncSearch(heroSearch));
-carSearch.addEventListener("input",()=>syncSearch(carSearch));
-
-grid.addEventListener("click",e=>{
-  const fav=e.target.closest("[data-fav]");
-  if(fav){e.stopPropagation(); const id=fav.dataset.fav; favorites=isFav(id)?favorites.filter(x=>x!==id):[...favorites,id]; saveFavs(); renderCars(); return;}
-  const cmp=e.target.closest("[data-compare]");
-  if(cmp){e.stopPropagation(); toggleCompare(cmp.dataset.compare); return;}
-  const card=e.target.closest(".car-card");
-  if(card) openModal(card.dataset.id);
-});
-
-function toggleCompare(id){
-  if(compareIds.includes(id)) compareIds=compareIds.filter(x=>x!==id);
-  else if(compareIds.length<3) compareIds.push(id);
-  else { alert("You can compare up to 3 cars."); return; }
-  renderCars(); renderCompare();
+/* McDonald's Zanesville – GitHub Pages Site */
+:root {
+  --red: #DA291C;
+  --red-dark: #b82218;
+  --yellow: #FFC72C;
+  --yellow-dark: #e6b328;
+  --black: #27251F;
+  --gray-100: #f7f7f7;
+  --gray-200: #eee;
+  --gray-500: #6b6b6b;
+  --gray-700: #333;
+  --white: #ffffff;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --radius: 12px;
 }
 
-function renderCompare(){
-  const board=document.getElementById("compareBoard");
-  if(!compareIds.length){
-    board.innerHTML='<div class="compare-empty">Select cars using the <strong>Compare</strong> button on any card.</div>';
-    return;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--black);
+  line-height: 1.6;
+  background: var(--white);
+}
+
+a {
+  color: var(--red);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--white);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  gap: 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--black);
+}
+
+.logo-m {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--red);
+  color: var(--yellow);
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.nav {
+  display: flex;
+  gap: 28px;
+}
+
+.nav a {
+  color: var(--gray-700);
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.nav a:hover {
+  color: var(--red);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--red);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--red-dark);
+  text-decoration: none;
+  color: var(--white);
+}
+
+.btn-secondary {
+  background: var(--gray-100);
+  color: var(--black);
+}
+
+.btn-secondary:hover {
+  background: var(--gray-200);
+  text-decoration: none;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--white);
+  color: var(--white);
+}
+
+.btn-outline:hover {
+  background: rgba(255,255,255,0.15);
+  text-decoration: none;
+  color: var(--white);
+}
+
+.btn-yellow {
+  background: var(--yellow);
+  color: var(--black);
+}
+
+.btn-yellow:hover {
+  background: var(--yellow-dark);
+  text-decoration: none;
+  color: var(--black);
+}
+
+.btn-outline-light {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.7);
+  color: var(--white);
+}
+
+.btn-outline-light:hover {
+  background: rgba(255,255,255,0.1);
+  text-decoration: none;
+  color: var(--white);
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  background: linear-gradient(135deg, var(--red) 0%, #c41e12 100%);
+  color: var(--white);
+  padding: 80px 0 90px;
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 80% 20%, rgba(255,199,44,0.25) 0%, transparent 50%),
+    radial-gradient(circle at 10% 80%, rgba(0,0,0,0.15) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  background: var(--yellow);
+  color: var(--black);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+.hero h1 {
+  font-size: clamp(2.8rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  opacity: 0.95;
+  margin-bottom: 24px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px 32px;
+  margin-bottom: 32px;
+  font-size: 1.05rem;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stars {
+  color: var(--yellow);
+  letter-spacing: 1px;
+}
+
+.reviews {
+  opacity: 0.85;
+  font-size: 0.95rem;
+}
+
+.price {
+  opacity: 0.9;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Sections */
+.section {
+  padding: 70px 0;
+}
+
+.section-alt {
+  background: var(--gray-100);
+}
+
+.section h2 {
+  font-size: 1.9rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.section-intro {
+  color: var(--gray-500);
+  margin-bottom: 36px;
+}
+
+/* Overview */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.overview-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  transition: box-shadow 0.2s;
+}
+
+.overview-card:hover {
+  box-shadow: var(--shadow);
+}
+
+.overview-card .icon {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.overview-card h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+}
+
+.overview-card p {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.overview-card a {
+  color: var(--black);
+  font-weight: 600;
+}
+
+.overview-card a:hover {
+  color: var(--red);
+}
+
+.overview-text {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--gray-700);
+  font-size: 1.1rem;
+}
+
+/* Menu */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.menu-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+
+.menu-card:hover {
+  transform: translateY(-3px);
+}
+
+.menu-emoji {
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+}
+
+.menu-card h3 {
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+}
+
+.menu-card p {
+  color: var(--gray-500);
+  font-size: 0.95rem;
+}
+
+.menu-cta {
+  text-align: center;
+}
+
+/* Reviews */
+.reviews-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.big-rating {
+  text-align: center;
+}
+
+.score {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--red);
+}
+
+.stars-large {
+  color: var(--yellow);
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  margin: 6px 0;
+}
+
+.big-rating p {
+  color: var(--gray-500);
+  font-size: 0.95rem;
+}
+
+.rating-bars {
+  min-width: 260px;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+.bar-row span {
+  width: 28px;
+  text-align: right;
+}
+
+.bar {
+  flex: 1;
+  height: 10px;
+  background: var(--gray-200);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar .fill {
+  height: 100%;
+  background: var(--yellow);
+  border-radius: 999px;
+}
+
+.reviews-note {
+  text-align: center;
+  color: var(--gray-500);
+  font-size: 0.95rem;
+}
+
+/* Location */
+.location-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 36px;
+  align-items: start;
+}
+
+.location-info h3 {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+.location-info > p {
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+
+.phone {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 12px 0 24px !important;
+}
+
+.hours-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--gray-200);
+}
+
+.hours-box h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-500);
+  margin-bottom: 10px;
+}
+
+.hours-box ul {
+  list-style: none;
+}
+
+.hours-box li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+}
+
+.confirmed {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.location-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.map-placeholder {
+  position: relative;
+  height: 320px;
+  background: var(--gray-200);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.map-placeholder iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-fallback {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  background: rgba(255,255,255,0.9);
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+/* CTA Banner */
+.cta-banner {
+  background: var(--black);
+  color: var(--white);
+  padding: 60px 0;
+  text-align: center;
+}
+
+.cta-banner h2 {
+  font-size: 1.9rem;
+  margin-bottom: 8px;
+}
+
+.cta-banner p {
+  opacity: 0.85;
+  margin-bottom: 28px;
+}
+
+.cta-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Footer */
+.footer {
+  background: #1a1917;
+  color: rgba(255,255,255,0.7);
+  padding: 40px 0;
+  font-size: 0.9rem;
+}
+
+.footer-inner {
+  text-align: center;
+}
+
+.footer-brand {
+  color: var(--white);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.footer-brand .logo-m {
+  width: 28px;
+  height: 28px;
+  font-size: 0.9rem;
+}
+
+.footer p {
+  margin-bottom: 6px;
+}
+
+.disclaimer {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.disclaimer a {
+  color: var(--yellow);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav {
+    display: none;
   }
-  const chosen=compareIds.map(id=>cars.find(c=>c.id===id));
-  const rows=[["Engine","engine"],["Power","power"],["Torque","torque"],["Drivetrain","drive"],["0–60 mph","zero"],["Top speed","top"],["Weight","weight"],["Starting price","price"]];
-  board.innerHTML=`<table class="compare-table">
-    <thead><tr><th></th>${chosen.map(c=>`<th><img src="${c.image}" alt=""><br>${c.brand} ${c.name}<br><button class="compare-btn" data-remove="${c.id}">Remove</button></th>`).join("")}</tr></thead>
-    <tbody>${rows.map(([label,key])=>`<tr><td>${label}</td>${chosen.map(c=>`<td>${c[key]}</td>`).join("")}</tr>`).join("")}</tbody>
-  </table>`;
+
+  .header-inner {
+    justify-content: space-between;
+  }
+
+  .hero {
+    padding: 60px 0 70px;
+  }
+
+  .location-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .map-placeholder {
+    height: 260px;
+  }
+
+  .reviews-summary {
+    flex-direction: column;
+    gap: 28px;
+  }
 }
-document.getElementById("compareBoard").addEventListener("click",e=>{
-  const b=e.target.closest("[data-remove]"); if(b){toggleCompare(b.dataset.remove);}
-});
 
-const backdrop=document.getElementById("modalBackdrop");
-function openModal(id){
-  const c=cars.find(x=>x.id===id); activeModalCar=c;
-  document.getElementById("modalImg").src=c.image;
-  document.getElementById("modalImg").alt=`${c.year} ${c.brand} ${c.name}`;
-  document.getElementById("modalBrand").textContent=`${c.brand} · ${c.year}`;
-  document.getElementById("modalName").textContent=c.name;
-  document.getElementById("modalDescription").textContent=c.desc;
-  document.getElementById("modalSpecs").innerHTML=[
-    ["Engine",c.engine],["Power",c.power],["Torque",c.torque],["Drive",c.drive],["0–60",c.zero],["Top speed",c.top],["Weight",c.weight],["MSRP",c.price]
-  ].map(([k,v])=>`<div class="spec"><small>${k}</small><b>${v}</b></div>`).join("");
-  document.getElementById("modalFav").textContent=isFav(c.id)?"♥ Saved":"♡ Save car";
-  backdrop.classList.add("open");
+@media (max-width: 480px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }
-function closeModal(){backdrop.classList.remove("open")}
-document.getElementById("modalClose").onclick=closeModal;
-backdrop.addEventListener("click",e=>{if(e.target===backdrop)closeModal()});
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape")closeModal();
-  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();heroSearch.focus();}
-});
-document.getElementById("modalFav").onclick=()=>{
-  const id=activeModalCar.id;
-  favorites=isFav(id)?favorites.filter(x=>x!==id):[...favorites,id];
-  saveFavs(); document.getElementById("modalFav").textContent=isFav(id)?"♥ Saved":"♡ Save car"; renderCars();
-};
-document.getElementById("modalCompare").onclick=()=>{toggleCompare(activeModalCar.id);closeModal();document.getElementById("compare").scrollIntoView({behavior:"smooth"})};
-
-document.getElementById("favoritesBtn").onclick=()=>{
-  if(!favorites.length){alert("You don't have any saved cars yet.");return;}
-  selectedBrand="All"; carSearch.value=""; heroSearch.value="";
-  document.querySelectorAll(".filter").forEach(b=>b.classList.toggle("active",b.dataset.brand==="All"));
-  grid.innerHTML=cars.filter(c=>favorites.includes(c.id)).map(c=>`
-    <article class="car-card" data-id="${c.id}">
-      <div class="car-image"><img src="${c.image}" alt="${c.year} ${c.brand} ${c.name}"></div>
-      <div class="car-info"><div class="car-meta"><span>${c.brand}</span><span>${c.year}</span></div><div class="car-name">${c.name}</div>
-      <div class="card-bottom"><span class="car-spec">${c.power} · ${c.zero} 0–60</span><button class="heart saved" data-fav="${c.id}">♥</button></div></div>
-    </article>`).join("");
-  document.getElementById("cars").scrollIntoView({behavior:"smooth"});
-};
-
-document.getElementById("menuBtn").onclick=()=>document.getElementById("mobileMenu").classList.add("open");
-document.getElementById("mobileClose").onclick=()=>document.getElementById("mobileMenu").classList.remove("open");
-document.querySelectorAll(".mobile-menu a").forEach(a=>a.onclick=()=>document.getElementById("mobileMenu").classList.remove("open"));
